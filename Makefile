@@ -7,16 +7,16 @@ asm : kernel.img
 all : asm
 
 clean :
-	rm -f *.o
-	rm -f *.img
-	rm -f *.hex
-	rm -f *.elf
-	rm -f *.list
-	rm -f *.img
-	rm -f memory_map.txt
+	rm  *.o
+	rm  *.img
+	rm  *.hex
+	rm  *.elf
+	rm  *.list
+	rm  *.img
+	rm  memory_map.txt
 
 main.o : main.s
-	$(ARMGNU)-as $(AOPS) main.s gpio.s app.s -o main.o
+	$(ARMGNU)-as $(AOPS) main.s gpio.s app.s draw.s -o main.o
 
 
 kernel.img : memmap main.o
