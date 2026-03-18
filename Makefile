@@ -2,25 +2,18 @@ ARMGNU ?= aarch64-none-linux-gnu
 
 AOPS = --warn --fatal-warnings
 
-asm : kernel.img
+asm: kernel8.img
+all: asm
 
-all : asm
+clean:
+	rm -f *.o *.img *.hex *.elf *.list memory_map.txt kernel8.img
 
-clean :
-	rm  *.o
-	rm  *.img
-	rm  *.hex
-	rm  *.elf
-	rm  *.list
-	rm  *.img
-	rm  memory_map.txt
+main.o: main.s gpio.s app.s draw.s drawPacman.s
+	$(ARMGNU)-as $(AOPS) main.s gpio.s app.s draw.s drawPacman.s -o main.o
 
-main.o : main.s
-	$(ARMGNU)-as $(AOPS) main.s gpio.s app.s draw.s -o main.o
-
-
-kernel.img : memmap main.o
+kernel8.img: memmap main.o
 	$(ARMGNU)-ld main.o -T memmap -o main.elf -M > memory_map.txt
 	$(ARMGNU)-objdump -D main.elf > main.list
 	$(ARMGNU)-objcopy main.elf -O ihex main.hex
 	$(ARMGNU)-objcopy main.elf -O binary kernel8.img
+	copy /Y kernel8.img D:\kernel8.img

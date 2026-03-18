@@ -24,12 +24,19 @@ app:
 
 	//---------------- Main code --------------------
 	// X0 contiene la dirección base del framebuffer (NO MODIFICAR)
+
+	ldr x19, =0x400000
+	mov sp, x19
 	
 	bl background
+	bl drawMaze
+	mov x1, #15
+	mov x2, #29
+	mov x3, #0      // derecha
+	bl drawPacmanAtCellDir
 
-
-	
 	// --- Infinite Loop ---	
 InfLoop: 
+	bl drawMaze
 	b InfLoop
 	

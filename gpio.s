@@ -24,10 +24,10 @@ GreenOn:
 RedOff:
 	mov w15, PERIPHERAL_BASE + GPIO_BASE
 	mov x14, #0b100
-	str x14, [x15, ##0x1C]
+	str x14, [x15, #0x1C]
 	br x30
 GreenOff:
 	mov w15, PERIPHERAL_BASE + GPIO_BASE
 	mov x14, #0b1000
-	str x14, [x15, ##0x1C]
+	str x14, [x15, #0x1C]
 	br x30
