@@ -1,3 +1,5 @@
+// drawpacman.s
+
 //--------------------------------------------------------------
 // Sprite base de Pac-Man pequeño mirando a la derecha (16x16)
 // Bit 15 = píxel más a la izquierda
@@ -202,4 +204,44 @@ pacdir_next_row:
     b pacdir_row_loop
 
 pacdir_done:
+    ret
+
+.global borrarPacmanAnterior
+
+borrarPacmanAnterior:
+    sub sp, sp, #16
+    str x30, [sp]
+
+    ldr x9, =pacmanOldX
+    ldr w10, [x9]
+
+    ldr x11, =pacmanOldY
+    ldr w12, [x11]
+
+    // convertir celda a píxel
+    lsl x1, x10, #4
+    add x1, x1, #8
+
+    lsl x2, x12, #4
+    add x2, x2, #8
+
+    // color negro
+    mov w3, #0x0000
+
+    // dibujar bloque 16x16 negro
+    mov x13, #0
+borrar_loop:
+    cmp x13, #16
+    b.ge borrar_fin
+
+    mov x4, #16
+    bl drawHLine
+
+    add x2, x2, #1
+    add x13, x13, #1
+    b borrar_loop
+
+borrar_fin:
+    ldr x30, [sp]
+    add sp, sp, #16
     ret

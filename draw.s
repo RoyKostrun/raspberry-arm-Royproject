@@ -1,4 +1,4 @@
-
+// draw.s
 mazeMap31:
     .ascii "1111111111111111111111111111111"
     .ascii "1000000000000001000000000000001"
@@ -86,11 +86,11 @@ drawMaze:
     // x9 = puntero base al mapa
     ldr x9, =mazeMap31
 
-    // x20 = fila (0..30)
-    mov x20, #0
+    // x16 = fila (0..30)
+    mov x16, #0
 
 maze_row_loop:
-    cmp x20, #31
+    cmp x16, #31
     b.ge maze_done
 
     // x21 = columna (0..30)
@@ -105,7 +105,7 @@ maze_col_loop:
     // dirección = base + fila*31 + col
     // ---------------------------------------------------------
     mov x22, #31
-    mul x23, x20, x22
+    mul x23, x16, x22
     add x23, x23, x21
     add x24, x9, x23
     ldrb w25, [x24]
@@ -122,16 +122,16 @@ maze_col_loop:
     lsl x26, x21, #4      // col * 16
     add x26, x26, #8      // pixelX
 
-    lsl x27, x20, #4      // fila * 16
+    lsl x27, x16, #4      // fila * 16
     add x27, x27, #8      // pixelY
 
     // =========================================================
     // BORDE SUPERIOR
     // si fila == 0, o la celda de arriba no es '1'
     // =========================================================
-    cbz x20, draw_top
+    cbz x16, draw_top
 
-    sub x28, x20, #1
+    sub x28, x16, #1
     mov x22, #31
     mul x23, x28, x22
     add x23, x23, x21
@@ -152,10 +152,10 @@ skip_top:
     // BORDE INFERIOR
     // si fila == 30, o la celda de abajo no es '1'
     // =========================================================
-    cmp x20, #30
+    cmp x16, #30
     b.eq draw_bottom
 
-    add x28, x20, #1
+    add x28, x16, #1
     mov x22, #31
     mul x23, x28, x22
     add x23, x23, x21
@@ -180,7 +180,7 @@ skip_bottom:
 
     sub x28, x21, #1
     mov x22, #31
-    mul x23, x20, x22
+    mul x23, x16, x22
     add x23, x23, x28
     add x24, x9, x23
     ldrb w25, [x24]
@@ -204,7 +204,7 @@ skip_left:
 
     add x28, x21, #1
     mov x22, #31
-    mul x23, x20, x22
+    mul x23, x16, x22
     add x23, x23, x28
     add x24, x9, x23
     ldrb w25, [x24]
@@ -224,7 +224,7 @@ next_col:
     b maze_col_loop
 
 next_row:
-    add x20, x20, #1
+    add x16, x16, #1
     b maze_row_loop
 
 maze_done:
