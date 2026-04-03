@@ -29,6 +29,7 @@ app:
 	
 	bl background
 	bl drawMaze
+	bl dibujarPuntos
 	bl dibujarPacmanActual
 
 	bl inputRead
@@ -38,8 +39,10 @@ InfLoop:
 	bl inputRead
 	bl actualizarDireccionPacman
 	bl moverPacman
+	bl comerPunto
 	bl borrarPacmanAnterior
 
+	bl dibujarPuntos
 	bl dibujarPacmanActual
 	bl delaySimple
 

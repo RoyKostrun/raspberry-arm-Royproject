@@ -17,36 +17,43 @@ Linker script and memory map
 
 LOAD main.o
 
-.text           0x0000000000000000    0x10c38
+.text           0x0000000000000000    0x11280
  *(.text*)
- .text          0x0000000000000000    0x10c38 main.o
+ .text          0x0000000000000000    0x11280 main.o
                 0x00000000000100a4                inputRead
                 0x0000000000010154                actualizarDireccionPacman
                 0x00000000000102b0                app
-                0x0000000000010a64                borrarPacmanAnterior
-                0x0000000000010ad0                pacmanOldX
-                0x0000000000010ad4                pacmanOldY
-                0x0000000000010ad8                pacmanX
-                0x0000000000010adc                pacmanY
-                0x0000000000010ae0                pacmanDir
-                0x0000000000010ae4                moverPacman
-                0x0000000000010bbc                dibujarPacmanActual
-                0x0000000000010bf8                delaySimple
+                0x0000000000010320                mazeMap31
+                0x0000000000010908                pacmanMouthState
+                0x000000000001090c                drawPacmanAtCellDir
+                0x0000000000010920                drawPacman16Dir
+                0x0000000000010b30                borrarPacmanAnterior
+                0x0000000000010ba0                pacmanOldX
+                0x0000000000010ba4                pacmanOldY
+                0x0000000000010ba8                pacmanX
+                0x0000000000010bac                pacmanY
+                0x0000000000010bb0                pacmanDir
+                0x0000000000010bb4                moverPacman
+                0x0000000000010c9c                dibujarPacmanActual
+                0x0000000000010cd8                delaySimple
+                0x0000000000010d20                dotMap
+                0x00000000000110e4                dibujarPuntos
+                0x00000000000111cc                comerPunto
 
-.iplt           0x0000000000010c38        0x0
- .iplt          0x0000000000010c38        0x0 main.o
+.iplt           0x0000000000011280        0x0
+ .iplt          0x0000000000011280        0x0 main.o
 
-.rela.dyn       0x0000000000010c38        0x0
- .rela.iplt     0x0000000000010c38        0x0 main.o
+.rela.dyn       0x0000000000011280        0x0
+ .rela.iplt     0x0000000000011280        0x0 main.o
 
-.data           0x0000000000010c38        0x0
- .data          0x0000000000010c38        0x0 main.o
+.data           0x0000000000011280        0x0
+ .data          0x0000000000011280        0x0 main.o
 
-.igot.plt       0x0000000000010c38        0x0
- .igot.plt      0x0000000000010c38        0x0 main.o
+.igot.plt       0x0000000000011280        0x0
+ .igot.plt      0x0000000000011280        0x0 main.o
 
-.bss            0x0000000000010c38        0x0
+.bss            0x0000000000011280        0x0
  *(.bss*)
- .bss           0x0000000000010c38        0x0 main.o
+ .bss           0x0000000000011280        0x0 main.o
 OUTPUT(main.elf elf64-littleaarch64)
 LOAD linker stubs

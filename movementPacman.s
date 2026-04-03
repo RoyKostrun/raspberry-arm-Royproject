@@ -113,6 +113,12 @@ mover_check_bounds:
     str w15, [x11]
     str w16, [x13]
 
+    // alternar boca abierta/cerrada
+    ldr x21, =pacmanMouthState
+    ldr w22, [x21]
+    eor w22, w22, #1
+    str w22, [x21]
+    
 mover_fin:
     br x30
 

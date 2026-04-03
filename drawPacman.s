@@ -1,49 +1,16 @@
 // drawpacman.s
 
-//--------------------------------------------------------------
-// Sprite base de Pac-Man pequeño mirando a la derecha (16x16)
-// Bit 15 = píxel más a la izquierda
-//--------------------------------------------------------------
-pacmanMask:
-    .hword 0x0000
-    .hword 0x01E0
-    .hword 0x07F8
-    .hword 0x0FFC
-    .hword 0x1FF8
-    .hword 0x1FE0
-    .hword 0x3FC0
-    .hword 0x3F80
-    .hword 0x3F00
-    .hword 0x3F80
-    .hword 0x3FC0
-    .hword 0x1FE0
-    .hword 0x1FF8
-    .hword 0x0FFC
-    .hword 0x07F8
-    .hword 0x0000
+.global pacmanMouthState
+.global drawPacmanAtCellDir
+.global drawPacman16Dir
+.global borrarPacmanAnterior
 
-pacmanEyeMask:
-    .hword 0x0000
-    .hword 0x0000
-    .hword 0x0000
-    .hword 0x0180
-    .hword 0x0180
-    .hword 0x0000
-    .hword 0x0000
-    .hword 0x0000
-    .hword 0x0000
-    .hword 0x0000
-    .hword 0x0000
-    .hword 0x0000
-    .hword 0x0000
-    .hword 0x0000
-    .hword 0x0000
-    .hword 0x0000
+.balign 4
+pacmanMouthState: .word 1   // 1 = boca abierta, 0 = boca cerrada
 
-    //--------------------------------------------------------------
+
+//--------------------------------------------------------------
 // drawPacmanAtCellDir
-// Dibuja Pac-Man en una celda de la grilla 31x31 con dirección.
-//
 // Entradas:
 // x0 = framebuffer
 // x1 = columna de la grilla
@@ -60,7 +27,7 @@ drawPacmanAtCellDir:
 
 //--------------------------------------------------------------
 // drawPacman16Dir
-// Dibuja Pac-Man 16x16 en una posición de píxel y con dirección.
+// Dibuja Pac-Man 16x16 de forma programática.
 //
 // Entradas:
 // x0 = framebuffer
@@ -75,136 +42,207 @@ drawPacmanAtCellDir:
 // 3 = abajo
 //--------------------------------------------------------------
 drawPacman16Dir:
-    adr x9, pacmanMask
-    adr x10, pacmanEyeMask
+    // centro aproximado del sprite
+    mov x9, #7                  // cx
+    mov x10, #7                 // cy
 
-    mov x11, #0                 // fila destino = 0
+    // radio aproximado
+    mov x11, #6                 // r
+    mov x12, #36                // r^2 = 6*6
 
-pacdir_row_loop:
-    cmp x11, #16
-    b.ge pacdir_done
+    // estado de la boca
+    ldr x13, =pacmanMouthState
+    ldr w14, [x13]              // 1 abierta, 0 cerrada
 
-    mov x12, #0                 // col destino = 0
+    mov x15, #0                 // fila = 0
 
-pacdir_col_loop:
-    cmp x12, #16
-    b.ge pacdir_next_row
+pac_row_loop:
+    cmp x15, #16
+    b.ge pac_done
 
-    //----------------------------------------------------------
-    // Calcular (srcRow, srcCol) según la dirección
-    //----------------------------------------------------------
+    mov x16, #0                 // col = 0
+
+pac_col_loop:
+    cmp x16, #16
+    b.ge pac_next_row
+
+    // dx = col - cx
+    mov x17, x16
+    sub x17, x17, x9
+
+    // dy = fila - cy
+    mov x18, x15
+    sub x18, x18, x10
+
+    // dx^2 + dy^2
+    mul x19, x17, x17
+    mul x20, x18, x18
+    add x21, x19, x20
+
+    // si está fuera del círculo, no dibujar
+    cmp x21, x12
+    b.gt pac_skip_pixel
+
+    // ---------------------------------------------------------
+    // ojo blanco (2x2), depende de la dirección
+    // ---------------------------------------------------------
+    cmp x3, #0
+    b.eq eye_right
+    cmp x3, #1
+    b.eq eye_left
+    cmp x3, #2
+    b.eq eye_up
+    b eye_down
+
+eye_right:
+    cmp x15, #4
+    b.lt pac_check_mouth
+    cmp x15, #5
+    b.gt pac_check_mouth
+    cmp x16, #7
+    b.lt pac_check_mouth
+    cmp x16, #8
+    b.gt pac_check_mouth
+    b pac_draw_white
+
+eye_left:
+    cmp x15, #4
+    b.lt pac_check_mouth
+    cmp x15, #5
+    b.gt pac_check_mouth
+    cmp x16, #5
+    b.lt pac_check_mouth
+    cmp x16, #6
+    b.gt pac_check_mouth
+    b pac_draw_white
+
+eye_up:
+    cmp x15, #5
+    b.lt pac_check_mouth
+    cmp x15, #6
+    b.gt pac_check_mouth
+    cmp x16, #4
+    b.lt pac_check_mouth
+    cmp x16, #5
+    b.gt pac_check_mouth
+    b pac_draw_white
+
+eye_down:
+    cmp x15, #4
+    b.lt pac_check_mouth
+    cmp x15, #5
+    b.gt pac_check_mouth
+    cmp x16, #9
+    b.lt pac_check_mouth
+    cmp x16, #10
+    b.gt pac_check_mouth
+    b pac_draw_white
+
+    // ---------------------------------------------------------
+    // boca: solo si está abierta
+    // ---------------------------------------------------------
+pac_check_mouth:
+    cbz w14, pac_draw_yellow
+
+    // |dx|
+    mov x22, x17
+    cmp x22, #0
+    b.ge abs_dx_ok
+    neg x22, x22
+abs_dx_ok:
+
+    // |dy|
+    mov x23, x18
+    cmp x23, #0
+    b.ge abs_dy_ok
+    neg x23, x23
+abs_dy_ok:
 
     cmp x3, #0
-    b.eq pacdir_right
-
+    b.eq mouth_right
     cmp x3, #1
-    b.eq pacdir_left
-
+    b.eq mouth_left
     cmp x3, #2
-    b.eq pacdir_up
+    b.eq mouth_up
+    b mouth_down
 
-    // si no es 0,1,2 => abajo
-pacdir_down:
-    // abajo = rotación 90° horaria
-    // srcRow = 15 - col
-    // srcCol = fila
-    mov x13, #15
-    sub x13, x13, x12          // srcRow
-    mov x14, x11               // srcCol
-    b pacdir_have_src
+mouth_right:
+    // muesca triangular hacia la derecha
+    cmp x16, #7
+    b.le pac_draw_yellow
+    sub x24, x16, #7
+    cmp x23, x24
+    b.le pac_skip_pixel
+    b pac_draw_yellow
 
-pacdir_right:
-    // derecha = sprite base
-    mov x13, x11               // srcRow
-    mov x14, x12               // srcCol
-    b pacdir_have_src
+mouth_left:
+    // muesca triangular hacia la izquierda
+    cmp x16, #7
+    b.ge pac_draw_yellow
+    mov x24, #7
+    sub x24, x24, x16
+    cmp x23, x24
+    b.le pac_skip_pixel
+    b pac_draw_yellow
 
-pacdir_left:
-    // izquierda = espejo horizontal
-    mov x13, x11               // srcRow
-    mov x14, #15
-    sub x14, x14, x12          // srcCol = 15 - col
-    b pacdir_have_src
+mouth_up:
+    // muesca triangular hacia arriba
+    cmp x15, #7
+    b.ge pac_draw_yellow
+    mov x24, #7
+    sub x24, x24, x15
+    cmp x22, x24
+    b.le pac_skip_pixel
+    b pac_draw_yellow
 
-pacdir_up:
-    // arriba = rotación 90° antihoraria
-    // srcRow = col
-    // srcCol = 15 - fila
-    mov x13, x12               // srcRow
-    mov x14, #15
-    sub x14, x14, x11          // srcCol
-    b pacdir_have_src
+mouth_down:
+    // muesca triangular hacia abajo
+    cmp x15, #7
+    b.le pac_draw_yellow
+    sub x24, x15, #7
+    cmp x22, x24
+    b.le pac_skip_pixel
+    b pac_draw_yellow
 
-pacdir_have_src:
-    //----------------------------------------------------------
-    // Cargar fila de la máscara amarilla y del ojo
-    //----------------------------------------------------------
-    add x15, x9, x13, lsl #1
-    ldrh w16, [x15]            // fila amarilla
 
-    add x15, x10, x13, lsl #1
-    ldrh w17, [x15]            // fila ojo
+pac_draw_white:
+    add x25, x2, x15           // y actual
+    mov x26, #512
+    mul x27, x25, x26
+    add x27, x27, x1
+    add x27, x27, x16
+    lsl x27, x27, #1
+    add x27, x0, x27
+    mov w28, #0xFFFF
+    sturh w28, [x27]
+    b pac_after_pixel
 
-    //----------------------------------------------------------
-    // Construir máscara del bit según srcCol
-    // bit 15 = pixel más a la izquierda
-    // mask = 1 << (15 - srcCol)
-    //----------------------------------------------------------
-    mov w18, #15
-    sub w18, w18, w14
-    mov w19, #1
-    lsl w19, w19, w18
+pac_draw_yellow:
+    add x25, x2, x15           // y actual
+    mov x26, #512
+    mul x27, x25, x26
+    add x27, x27, x1
+    add x27, x27, x16
+    lsl x27, x27, #1
+    add x27, x0, x27
+    mov w28, #0xFFE0
+    sturh w28, [x27]
+    b pac_after_pixel
 
-    //----------------------------------------------------------
-    // Prioridad: ojo blanco > cuerpo amarillo
-    //----------------------------------------------------------
-    and w20, w17, w19
-    cmp w20, #0
-    b.ne pacdir_draw_white
-
-    and w20, w16, w19
-    cmp w20, #0
-    b.ne pacdir_draw_yellow
-
-    b pacdir_skip_pixel
-
-pacdir_draw_white:
-    add x21, x2, x11           // y actual
-    mov x22, #512
-    mul x23, x21, x22
-    add x23, x23, x1
-    add x23, x23, x12
-    lsl x23, x23, #1
-    add x23, x0, x23
-    mov w24, #0xFFFF
-    sturh w24, [x23]
-    b pacdir_after_pixel
-
-pacdir_draw_yellow:
-    add x21, x2, x11           // y actual
-    mov x22, #512
-    mul x23, x21, x22
-    add x23, x23, x1
-    add x23, x23, x12
-    lsl x23, x23, #1
-    add x23, x0, x23
-    mov w24, #0xFFE0
-    sturh w24, [x23]
-    b pacdir_after_pixel
-
-pacdir_skip_pixel:
+pac_skip_pixel:
     nop
 
-pacdir_after_pixel:
-    add x12, x12, #1
-    b pacdir_col_loop
+pac_after_pixel:
+    add x16, x16, #1
+    b pac_col_loop
 
-pacdir_next_row:
-    add x11, x11, #1
-    b pacdir_row_loop
+pac_next_row:
+    add x15, x15, #1
+    b pac_row_loop
 
-pacdir_done:
+pac_done:
     ret
+
 
 .global borrarPacmanAnterior
 
@@ -245,3 +283,4 @@ borrar_fin:
     ldr x30, [sp]
     add sp, sp, #16
     ret
+    

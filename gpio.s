@@ -1,3 +1,5 @@
+//gpio.s 
+
 .equ DIR_NINGUNO,   0
 .equ DIR_ARRIBA,    1
 .equ DIR_ABAJO,     2
