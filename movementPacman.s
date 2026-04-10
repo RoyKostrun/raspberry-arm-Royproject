@@ -1,3 +1,4 @@
+// movementPacman
 // Movimiento del Pac-Man
 
 .global pacmanX
@@ -147,7 +148,7 @@ dibujarPacmanActual:
 
 
 delaySimple:
-    mov x9, #0x40000
+    mov x9, #0x100000 // 0x40000
 delay_loop:
     sub x9, x9, #1
     cbnz x9, delay_loop

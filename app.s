@@ -35,16 +35,32 @@ app:
 	bl inputRead
 
 	// --- Infinite Loop ---	
-InfLoop: 
-	bl inputRead
-	bl actualizarDireccionPacman
-	bl moverPacman
-	bl comerPunto
-	bl borrarPacmanAnterior
 
-	bl dibujarPuntos
-	bl dibujarPacmanActual
-	bl delaySimple
+InfLoop:
+	// si ya perdimos, no hacemos nada más
+    ldr x23, =gameOver
+    ldr w24, [x23]
+    cbnz w24, game_over_loop
 
-	b InfLoop
+    bl inputRead
+    bl actualizarDireccionPacman
+    bl moverPacman
+    bl comerPunto
+
+    bl moverFantasmas
+    bl borrarFantasmas
+    bl dibujarPuntos
+    bl dibujarFantasmas
+
+    bl borrarPacmanAnterior
+    bl dibujarPacmanActual
+
+    bl checkColisionFantasmas       
+
+    bl delaySimple
+    b InfLoop
+
+game_over_loop:
+    bl delaySimple
+    b InfLoop
 	
