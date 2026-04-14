@@ -4,6 +4,7 @@
 .global dotMap
 .global dibujarPuntos
 .global comerPunto
+.global gameWon
 
 // ============================================================
 // dotMap: 31x31 bytes
@@ -16,6 +17,8 @@
 // Todos los pasillos alrededor de la casa SÍ tienen puntos.
 // ============================================================
 
+.balign 4
+gameWon: .word 0
 
 .balign 4
 dotMap:
@@ -23,7 +26,7 @@ dotMap:
 .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 //  Fila 1: (28 puntos)
-.byte 0,1,2,1,2,1,2,1,2,1,2,1,2,1,2,0,2,1,2,1,2,1,2,1,2,1,2,1,2,1,0
+.byte 0,3,2,1,2,1,2,1,2,1,2,1,2,1,2,0,2,1,2,1,2,1,2,1,2,1,2,1,2,3,0
 
 //  Fila 2: (8 puntos)
 .byte 0,2,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,2,0
@@ -107,7 +110,7 @@ dotMap:
 .byte 0,2,0,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,0,2,0
 
 //  Fila 29: (28 puntos) - pacman en (15,29)
-.byte 0,1,2,1,2,1,2,1,2,1,2,1,2,1,2,0,2,1,2,1,2,1,2,1,2,1,2,1,2,1,0
+.byte 0,3,2,1,2,1,2,1,2,1,2,1,2,1,2,0,2,1,2,1,2,1,2,1,2,1,2,1,2,3,0
 
 //  Fila 30: (0 puntos)
 .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -152,11 +155,13 @@ dp_col_loop:
     // si es 0, no hay punto
     cbz w25, dp_next_col
 
-    // determinar color
+    // determinar color y tipo de bolita
     cmp w25, #1
     b.eq dp_color_rojo
     cmp w25, #2
     b.eq dp_color_verde
+    cmp w25, #3
+    b.eq dp_color_poder
     b dp_next_col
 
 dp_color_rojo:
@@ -166,6 +171,39 @@ dp_color_rojo:
 dp_color_verde:
     mov w3, #0x07E0
     b dp_dibujar_punto
+
+dp_color_poder:
+    mov w3, #0xFFFF          // blanco
+    // dibujar un 8x8 centrado en la celda
+    lsl x1, x21, #4
+    add x1, x1, #8
+    add x1, x1, #4           // x inicio = 4 dentro de la celda
+    lsl x2, x16, #4
+    add x2, x2, #8
+    add x2, x2, #4           // y inicio = 4 dentro de la celda
+
+    ldr x0, [sp, #8]
+    mov x13, #0
+dp_poder_fila:
+    cmp x13, #8
+    b.ge dp_next_col
+    mov x14, #0
+dp_poder_col:
+    cmp x14, #8
+    b.ge dp_poder_nextf
+    add x5, x2, x13
+    mov x6, #512
+    mul x7, x5, x6
+    add x7, x7, x1
+    add x7, x7, x14
+    lsl x7, x7, #1
+    add x7, x0, x7
+    sturh w3, [x7]
+    add x14, x14, #1
+    b dp_poder_col
+dp_poder_nextf:
+    add x13, x13, #1
+    b dp_poder_fila
 
 dp_dibujar_punto:
     // centro de la celda: pixelX = 8 + col*16 + 6, pixelY = 8 + fila*16 + 6
@@ -256,15 +294,39 @@ comerPunto:
     // si no hay punto, apagar LEDs
     cbz w17, cp_apagar_leds
 
-    // marcar como comido
+// marcar como comido
     mov w18, #0
     strb w18, [x16]
 
-    // verificar color
+    // chequear si quedan puntos: recorrer todo dotMap buscando alguno != 0
+    ldr x19, =dotMap
+    mov w21, #961              // 31*31 = 961 bytes
+    mov w20, #0                // flag: ¿encontré algún punto?
+cp_contar_loop:
+    cbz w21, cp_contar_fin
+    ldrb w22, [x19]
+    cbz w22, cp_contar_siguiente
+    mov w20, #1                // encontré uno, marco flag y corto
+    b cp_contar_fin
+cp_contar_siguiente:
+    add x19, x19, #1
+    sub w21, w21, #1
+    b cp_contar_loop
+cp_contar_fin:
+    // si w20 == 0, no quedan puntos → ganaste
+    cbnz w20, cp_no_gano
+    ldr x19, =gameWon
+    mov w20, #1
+    str w20, [x19]
+cp_no_gano:
+
+    // verificar color y actuar según el tipo de punto
     cmp w17, #1
     b.eq cp_punto_rojo
     cmp w17, #2
     b.eq cp_punto_verde
+    cmp w17, #3
+    b.eq cp_punto_poder
     b cp_fin
 
 cp_punto_rojo:
@@ -291,13 +353,23 @@ cp_punto_verde:
 
     b cp_fin
 
+cp_punto_poder:
+    // activar frightened: frightenedTimer = 150 (frames)
+    ldr x20, =frightenedTimer
+    mov w21, #150
+    str w21, [x20]
+    b cp_fin
+
 cp_apagar_leds:
     // Apagar ambos LEDs (GPSET0: poner en alto = apagar)
     mov w20, PERIPHERAL_BASE + GPIO_BASE
     mov w21, #0b1100           // bits 2 y 3
     str w21, [x20, #0x1C]      // GPSET0
+    b cp_fin
 
+// algo de algo
 cp_fin:
     ldr x30, [sp]
     add sp, sp, #16
     ret
+

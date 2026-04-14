@@ -37,10 +37,15 @@ app:
 	// --- Infinite Loop ---	
 
 InfLoop:
-	// si ya perdimos, no hacemos nada más
+	// si ya perdimos, pausa
     ldr x23, =gameOver
     ldr w24, [x23]
     cbnz w24, game_over_loop
+
+	// si ganamos, pausa
+    ldr x23, =gameWon
+    ldr w24, [x23]
+    cbnz w24, game_won_loop
 
     bl inputRead
     bl actualizarDireccionPacman
@@ -61,6 +66,10 @@ InfLoop:
     b InfLoop
 
 game_over_loop:
+    bl delaySimple
+    b InfLoop
+
+game_won_loop:
     bl delaySimple
     b InfLoop
 	

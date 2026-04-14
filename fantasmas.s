@@ -7,6 +7,8 @@
 .global borrarFantasmas
 .global checkColisionFantasmas
 .global gameOver
+.global frightenedTimer
+
 
 .balign 4
 fantasmasX:     .word 15, 14, 15, 16
@@ -17,6 +19,7 @@ fantasmasDir:   .word 2,  2,  2,  2
 fantasmasColor: .word 0xF800, 0xF81F, 0x07FF, 0xFD20
 rngSeed:        .word 0x12345678
 gameOver:       .word 0
+frightenedTimer: .word 0
 
 
 // ============================================================
@@ -121,8 +124,16 @@ dfs_loop:
     ldr w1, [x9, x19, lsl #2]
     ldr x9, =fantasmasY
     ldr w2, [x9, x19, lsl #2]
+    // si frightened, todos azules
+    ldr x9, =frightenedTimer
+    ldr w4, [x9]
+    cbz w4, dfs_color_normal
+    mov w3, #0x001F          // azul
+    b dfs_color_listo
+dfs_color_normal:
     ldr x9, =fantasmasColor
     ldr w3, [x9, x19, lsl #2]
+dfs_color_listo:
 
     ldr x0, [sp, #8]
     bl dibujarFantasma
@@ -233,6 +244,14 @@ mf_abs1:
     neg w26, w26
 mf_abs2:
     add w26, w25, w26
+    // leer y decrementar frightenedTimer (solo en el primer fantasma)
+    cbnz x19, mf_frightened_ok
+    ldr x9, =frightenedTimer
+    ldr w15, [x9]
+    cbz w15, mf_frightened_ok
+    sub w15, w15, #1
+    str w15, [x9]
+mf_frightened_ok:
 
     mov w27, #0
     cmp w21, #14
@@ -320,6 +339,13 @@ mf_ch_ax:
     neg w17, w17
 mf_ch_ay:
     add w16, w16, w17
+// si frightened, invertir: buscar la MAYOR distancia
+    ldr x5, =frightenedTimer
+    ldr w6, [x5]
+    cbz w6, mf_ch_normal
+    // modo huida: negar w16 para que el min se convierta en max
+    neg w16, w16
+mf_ch_normal:
     cmp w16, w9
     b.ge mf_ch_skip
     mov w9,  w16
@@ -535,7 +561,71 @@ cc_loop:
     cmp w11, w13
     b.ne cc_next
 
-    // ¡Colisión! marcar gameOver
+// ¡Colisión!
+    // si está frightened, reset del fantasma a la casa
+    ldr x9, =frightenedTimer
+    ldr w14, [x9]
+    cbz w14, cc_game_over
+
+    // reset: fantasma vuelve a su posición inicial según x19
+    ldr x9, =fantasmasX
+    ldr x14, =fantasmasY
+    cmp x19, #0
+    b.ne cc_reset_1
+    mov w15, #15
+    mov w16, #13
+    b cc_reset_apply
+cc_reset_1:
+    cmp x19, #1
+    b.ne cc_reset_2
+    mov w15, #14
+    mov w16, #15
+    b cc_reset_apply
+cc_reset_2:
+    cmp x19, #2
+    b.ne cc_reset_3
+    mov w15, #15
+    mov w16, #15
+    b cc_reset_apply
+cc_reset_3:
+    mov w15, #16
+    mov w16, #15
+cc_reset_apply:
+    // borrar al fantasma visualmente en su posición actual (antes del reset)
+    lsl x1, x12, #4
+    add x1, x1, #8
+    lsl x2, x13, #4
+    add x2, x2, #8
+    mov w3, #0x0000
+    mov x17, #0
+cc_borrar_fantasma:
+    cmp x17, #16
+    b.ge cc_reset_escribir
+    mov x4, #16
+    ldr x0, [sp, #8]
+    bl drawHLine
+    add x2, x2, #1
+    add x17, x17, #1
+    b cc_borrar_fantasma
+
+cc_reset_escribir:
+    // escribir nueva posición en la casa
+    ldr x9, =fantasmasX
+    str w15, [x9, x19, lsl #2]
+    ldr x9, =fantasmasY
+    str w16, [x9, x19, lsl #2]
+    // actualizar old también con la nueva posición (para que borrar del frame próximo no haga nada raro)
+    ldr x9, =fantasmasOldX
+    str w15, [x9, x19, lsl #2]
+    ldr x9, =fantasmasOldY
+    str w16, [x9, x19, lsl #2]
+    // resetear dirección a arriba
+    ldr x9, =fantasmasDir
+    mov w15, #2
+    str w15, [x9, x19, lsl #2]
+    b cc_next
+
+cc_game_over:
     ldr x9, =gameOver
     mov w14, #1
     str w14, [x9]

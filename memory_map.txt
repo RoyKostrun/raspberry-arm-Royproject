@@ -17,48 +17,50 @@ Linker script and memory map
 
 LOAD main.o
 
-.text           0x0000000000000000    0x119c0
+.text           0x0000000000000000    0x11bc0
  *(.text*)
- .text          0x0000000000000000    0x119c0 main.o
+ .text          0x0000000000000000    0x11bc0 main.o
                 0x00000000000100a4                inputRead
                 0x0000000000010154                actualizarDireccionPacman
                 0x00000000000102b0                app
-                0x0000000000010348                mazeMap31
-                0x0000000000010930                pacmanMouthState
-                0x0000000000010934                drawPacmanAtCellDir
-                0x0000000000010948                drawPacman16Dir
-                0x0000000000010b58                borrarPacmanAnterior
-                0x0000000000010bc8                pacmanOldX
-                0x0000000000010bcc                pacmanOldY
-                0x0000000000010bd0                pacmanX
-                0x0000000000010bd4                pacmanY
-                0x0000000000010bd8                pacmanDir
-                0x0000000000010bdc                moverPacman
-                0x0000000000010cc4                dibujarPacmanActual
-                0x0000000000010d00                delaySimple
-                0x0000000000010d48                dotMap
-                0x000000000001110c                dibujarPuntos
-                0x00000000000111f4                comerPunto
-                0x000000000001130c                gameOver
-                0x0000000000011400                dibujarFantasmas
-                0x0000000000011454                borrarFantasmas
-                0x00000000000114d0                moverFantasmas
-                0x00000000000118ac                checkColisionFantasmas
+                0x0000000000010368                mazeMap31
+                0x0000000000010950                pacmanMouthState
+                0x0000000000010954                drawPacmanAtCellDir
+                0x0000000000010968                drawPacman16Dir
+                0x0000000000010b78                borrarPacmanAnterior
+                0x0000000000010be8                pacmanOldX
+                0x0000000000010bec                pacmanOldY
+                0x0000000000010bf0                pacmanX
+                0x0000000000010bf4                pacmanY
+                0x0000000000010bf8                pacmanDir
+                0x0000000000010bfc                moverPacman
+                0x0000000000010ce4                dibujarPacmanActual
+                0x0000000000010d20                delaySimple
+                0x0000000000010d68                gameWon
+                0x0000000000010d6c                dotMap
+                0x0000000000011130                dibujarPuntos
+                0x0000000000011288                comerPunto
+                0x0000000000011404                gameOver
+                0x0000000000011408                frightenedTimer
+                0x00000000000114fc                dibujarFantasmas
+                0x0000000000011564                borrarFantasmas
+                0x00000000000115e0                moverFantasmas
+                0x00000000000119e4                checkColisionFantasmas
 
-.iplt           0x00000000000119c0        0x0
- .iplt          0x00000000000119c0        0x0 main.o
+.iplt           0x0000000000011bc0        0x0
+ .iplt          0x0000000000011bc0        0x0 main.o
 
-.rela.dyn       0x00000000000119c0        0x0
- .rela.iplt     0x00000000000119c0        0x0 main.o
+.rela.dyn       0x0000000000011bc0        0x0
+ .rela.iplt     0x0000000000011bc0        0x0 main.o
 
-.data           0x00000000000119c0        0x0
- .data          0x00000000000119c0        0x0 main.o
+.data           0x0000000000011bc0        0x0
+ .data          0x0000000000011bc0        0x0 main.o
 
-.igot.plt       0x00000000000119c0        0x0
- .igot.plt      0x00000000000119c0        0x0 main.o
+.igot.plt       0x0000000000011bc0        0x0
+ .igot.plt      0x0000000000011bc0        0x0 main.o
 
-.bss            0x00000000000119c0        0x0
+.bss            0x0000000000011bc0        0x0
  *(.bss*)
- .bss           0x00000000000119c0        0x0 main.o
+ .bss           0x0000000000011bc0        0x0 main.o
 OUTPUT(main.elf elf64-littleaarch64)
 LOAD linker stubs
