@@ -14,105 +14,44 @@
 //
 // Interior de la casa de fantasmas (cols 12-18 en filas 14-17
 // y col 15 en fila 18) sin puntos.
-// Todos los pasillos alrededor de la casa SÍ tienen puntos.
 // ============================================================
 
 .balign 4
 gameWon: .word 0
 
+// byte: guarda numeros directos
 .balign 4
 dotMap:
-//  Fila 0: (0 puntos)
 .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-
-//  Fila 1: (28 puntos)
 .byte 0,3,2,1,2,1,2,1,2,1,2,1,2,1,2,0,2,1,2,1,2,1,2,1,2,1,2,1,2,3,0
-
-//  Fila 2: (8 puntos)
 .byte 0,2,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,2,0
-
-//  Fila 3: (22 puntos)
 .byte 0,1,2,1,2,0,2,0,2,1,2,1,2,0,2,0,2,0,2,1,2,1,2,0,2,0,2,1,2,1,0
-
-//  Fila 4: (10 puntos)
 .byte 0,2,0,0,1,0,1,0,0,0,0,0,1,0,1,0,1,0,1,0,0,0,0,0,1,0,1,0,0,2,0
-
-//  Fila 5: (29 puntos)
 .byte 0,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,0
-
-//  Fila 6: (6 puntos)
 .byte 0,2,0,2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,2,0,2,0
-
-//  Fila 7: (26 puntos)
 .byte 0,1,0,1,2,1,2,1,2,1,2,1,2,1,2,0,2,1,2,1,2,1,2,1,2,1,2,1,0,1,0
-
-//  Fila 8: (6 puntos)
 .byte 0,2,0,0,0,0,1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,2,0
-
-//  Fila 9: (28 puntos)
 .byte 0,1,2,1,2,1,2,1,2,1,2,1,2,1,2,0,2,1,2,1,2,1,2,1,2,1,2,1,2,1,0
-
-//  Fila 10: (4 puntos)
 .byte 0,0,0,0,0,0,0,2,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,2,0,0,0,0,0,0,0
-
-//  Fila 11: (4 puntos)
 .byte 0,0,0,0,0,0,0,1,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,1,0,0,0,0,0,0,0
-
-//  Fila 12: (4 puntos)
 .byte 0,0,0,0,0,0,0,2,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,2,0,0,0,0,0,0,0
-
-//  Fila 13: (17 puntos) - corredor horizontal arriba de la casa
 .byte 0,0,0,0,0,0,0,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,0,0,0,0,0,0,0
-
-//  Fila 14: (2 puntos) - laterales externos, interior casa excluido
 .byte 0,0,0,0,0,0,0,2,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,2,0,0,0,0,0,0,0
-
-//  Fila 15: (16 puntos) - portal lateral, interior casa excluido
 .byte 2,1,2,1,2,1,2,1,0,0,0,0,2,0,0,0,0,0,2,0,0,0,0,1,2,1,2,1,2,1,2
-
-//  Fila 16: (2 puntos) - laterales externos, interior casa excluido
 .byte 0,0,0,0,0,0,0,2,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,2,0,0,0,0,0,0,0
-
-//  Fila 17: (2 puntos) - laterales externos, interior casa excluido
 .byte 0,0,0,0,0,0,0,1,0,0,0,0,2,1,2,1,2,1,2,0,0,0,0,1,0,0,0,0,0,0,0
-                            
-//  Fila 18: (13 puntos) - corredor horizontal debajo de la casa
 .byte 0,0,0,0,0,0,0,2,1,2,1,2,1,0,0,2,0,0,1,2,1,2,1,2,0,0,0,0,0,0,0
-
-//  Fila 19: (3 puntos)
 .byte 0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
-
-//  Fila 20: (3 puntos)
 .byte 0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0
-
-//  Fila 21: (29 puntos)
 .byte 0,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,0
-
-//  Fila 22: (8 puntos)
 .byte 0,2,0,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,0,2,0
-
-//  Fila 23: (14 puntos)
 .byte 0,1,0,1,2,0,0,0,0,0,2,0,2,1,2,0,2,1,2,0,2,0,0,0,0,0,2,1,0,1,0
-
-//  Fila 24: (8 puntos)
 .byte 0,2,0,2,0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,2,0,2,0
-
-//  Fila 25: (29 puntos)
 .byte 0,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,0
-
-//  Fila 26: (8 puntos)
 .byte 0,0,1,0,1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1,0,1,0,0
-
-//  Fila 27: (24 puntos)
 .byte 0,1,2,0,2,0,2,1,2,1,2,1,2,1,2,0,2,1,2,1,2,1,2,1,2,0,2,0,2,1,0
-
-//  Fila 28: (6 puntos)
 .byte 0,2,0,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,0,2,0
-
-//  Fila 29: (28 puntos) - pacman en (15,29)
 .byte 0,3,2,1,2,1,2,1,2,1,2,1,2,1,2,0,2,1,2,1,2,1,2,1,2,1,2,1,2,3,0
-
-//  Fila 30: (0 puntos)
 .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 
@@ -135,6 +74,7 @@ dibujarPuntos:
 
     mov x16, #0              // fila = 0
 
+// Recorre las 31×31 celdas. 
 dp_row_loop:
     cmp x16, #31
     b.ge dp_done
@@ -145,7 +85,7 @@ dp_col_loop:
     cmp x21, #31
     b.ge dp_next_row
 
-    // calcular índice en dotMap
+    // calcular índice en dotMap, calcula fila × 31 + col, lee el byte con ldrb
     mov x22, #31
     mul x23, x16, x22
     add x23, x23, x21
@@ -155,7 +95,7 @@ dp_col_loop:
     // si es 0, no hay punto
     cbz w25, dp_next_col
 
-    // determinar color y tipo de bolita
+    // determinar color y tipo de bolita, un switch
     cmp w25, #1
     b.eq dp_color_rojo
     cmp w25, #2
@@ -164,6 +104,7 @@ dp_col_loop:
     b.eq dp_color_poder
     b dp_next_col
 
+// seteamos el color y salta a dp_dibujar_punto ( codigo compartido para dibujar un cuadradito 4x4 )
 dp_color_rojo:
     mov w3, #0xF800
     b dp_dibujar_punto
@@ -206,7 +147,7 @@ dp_poder_nextf:
     b dp_poder_fila
 
 dp_dibujar_punto:
-    // centro de la celda: pixelX = 8 + col*16 + 6, pixelY = 8 + fila*16 + 6
+    // centro de la celda: pixelX = 8 + col * 16 + 6, pixelY = 8 + fila * 16 + 6
     // punto 4x4 centrado
     lsl x1, x21, #4
     add x1, x1, #8
@@ -218,6 +159,8 @@ dp_dibujar_punto:
 
     // dibujar 4 filas de 4 píxeles
     ldr x0, [sp, #8]        // recuperar framebuffer
+
+// dobele loop del punto
 
     mov x13, #0              // contador de filas del punto
 dp_punto_fila:
@@ -235,7 +178,7 @@ dp_punto_col:
     mul x7, x5, x6
     add x7, x7, x1
     add x7, x7, x14          // x actual
-    lsl x7, x7, #1           // *2 (16 bits por píxel)
+    lsl x7, x7, #1           // * 2 (16 bits por píxel)
     add x7, x0, x7
     sturh w3, [x7]
 
@@ -255,13 +198,11 @@ dp_next_row:
     b dp_row_loop
 
 dp_done:
-    ldr x0, [sp, #8]
+    ldr x0, [sp, #8]  // restaurar framebuffer en x0
     ldr x30, [sp]
     add sp, sp, #32
     ret
 
-
-// ============================================================
 // comerPunto
 // Verifica si en la posición actual de Pac-Man hay un punto.
 // Si lo hay, lo marca como comido (0) y enciende el LED
@@ -269,7 +210,7 @@ dp_done:
 // Si no hay punto, apaga ambos LEDs.
 //
 // Entrada: (usa las variables globales pacmanX, pacmanY)
-// ============================================================
+
 .balign 4
 comerPunto:
     sub sp, sp, #16
@@ -282,7 +223,7 @@ comerPunto:
     ldr x11, =pacmanY
     ldr w12, [x11]
 
-    // calcular índice en dotMap: fila*31 + col
+    // calcular índice en dotMap: fila * 31 + col
     ldr x13, =dotMap
     mov w14, #31
     mul w15, w12, w14
@@ -296,31 +237,35 @@ comerPunto:
 
 // marcar como comido
     mov w18, #0
-    strb w18, [x16]
+    strb w18, [x16] // dotMap[pos] = 0, aqui la bolita ""desaparece
 
-    // chequear si quedan puntos: recorrer todo dotMap buscando alguno != 0
+    // chequeamos si quedan puntos: recorrer todo dotMap buscando alguno != 0
     ldr x19, =dotMap
-    mov w21, #961              // 31*31 = 961 bytes
+    mov w21, #961              // 31 * 31 = 961 bytes
     mov w20, #0                // flag: ¿encontré algún punto?
+    
 cp_contar_loop:
     cbz w21, cp_contar_fin
     ldrb w22, [x19]
     cbz w22, cp_contar_siguiente
     mov w20, #1                // encontré uno, marco flag y corto
     b cp_contar_fin
+
 cp_contar_siguiente:
-    add x19, x19, #1
-    sub w21, w21, #1
+    add x19, x19, #1    // avanzar al siguiente byte
+    sub w21, w21, #1    // decrementar contador
     b cp_contar_loop
+
 cp_contar_fin:
-    // si w20 == 0, no quedan puntos → ganaste
-    cbnz w20, cp_no_gano
+    // si w20 == 0, no quedan puntos = ganamos
+    cbnz w20, cp_no_gano // si w20 = 1, todavía hay puntos
     ldr x19, =gameWon
     mov w20, #1
-    str w20, [x19]
+    str w20, [x19] // gameWon = 1 = ganamos!
+
 cp_no_gano:
 
-    // verificar color y actuar según el tipo de punto
+    // verificar color y actuar según el tipo de punto, switch de tipo de punto
     cmp w17, #1
     b.eq cp_punto_rojo
     cmp w17, #2
@@ -354,10 +299,13 @@ cp_punto_verde:
     b cp_fin
 
 cp_punto_poder:
-    // activar frightened: frightenedTimer = 150 (frames)
+    // activar frightened: frightenedTimer 
     ldr x20, =frightenedTimer
-    mov w21, #150
-    str w21, [x20]
+    mov w21, #60    //------------modifff--------
+    str w21, [x20]                  // fantasma 0: timer = 60
+    str w21, [x20, #4]              // fantasma 1: timer = 60
+    str w21, [x20, #8]              // fantasma 2: timer = 60
+    str w21, [x20, #12]             // fantasma 3: timer = 60
     b cp_fin
 
 cp_apagar_leds:
@@ -367,7 +315,6 @@ cp_apagar_leds:
     str w21, [x20, #0x1C]      // GPSET0
     b cp_fin
 
-// algo de algo
 cp_fin:
     ldr x30, [sp]
     add sp, sp, #16

@@ -1,12 +1,12 @@
 // drawpacman.s
 
-.global pacmanMouthState
+.global estadoBocaPacman
 .global drawPacmanAtCellDir
 .global drawPacman16Dir
 .global borrarPacmanAnterior
 
 .balign 4
-pacmanMouthState: .word 1   // 1 = boca abierta, 0 = boca cerrada
+estadoBocaPacman: .word 1   // 1 = boca abierta, 0 = boca cerrada
 
 
 //--------------------------------------------------------------
@@ -25,7 +25,6 @@ drawPacmanAtCellDir:
     b drawPacman16Dir
 
 
-//--------------------------------------------------------------
 // drawPacman16Dir
 // Dibuja Pac-Man 16x16 de forma programática.
 //
@@ -40,9 +39,9 @@ drawPacmanAtCellDir:
 // 1 = izquierda
 // 2 = arriba
 // 3 = abajo
-//--------------------------------------------------------------
+
 drawPacman16Dir:
-    // centro aproximado del sprite
+    // centro aproximado 
     mov x9, #7                  // cx
     mov x10, #7                 // cy
 
@@ -51,12 +50,13 @@ drawPacman16Dir:
     mov x12, #36                // r^2 = 6*6
 
     // estado de la boca
-    ldr x13, =pacmanMouthState
+    ldr x13, =estadoBocaPacman    // carga el valor de estadoBocaPacman desde memoria
     ldr w14, [x13]              // 1 abierta, 0 cerrada
 
+// Loop por filas y columnas, recorre los 256 píxeles (16×16)
     mov x15, #0                 // fila = 0
 
-pac_row_loop:
+pac_fil_loop:
     cmp x15, #16
     b.ge pac_done
 
@@ -64,8 +64,9 @@ pac_row_loop:
 
 pac_col_loop:
     cmp x16, #16
-    b.ge pac_next_row
+    b.ge pac_siguiente_fila
 
+// Test del círculo
     // dx = col - cx
     mov x17, x16
     sub x17, x17, x9
@@ -79,133 +80,133 @@ pac_col_loop:
     mul x20, x18, x18
     add x21, x19, x20
 
-    // si está fuera del círculo, no dibujar
-    cmp x21, x12
-    b.gt pac_skip_pixel
+    // si está fuera del círculo, no dibujar, dx ^ 2 + dy ^ 2 > r ^ 2
+    cmp x21, x12       // comparar con r ^ 2 = 36
+    b.gt saltar_pixel  // si distancia ^ 2 > 36, fuera del círculo
 
     // ---------------------------------------------------------
     // ojo blanco (2x2), depende de la dirección
     // ---------------------------------------------------------
     cmp x3, #0
-    b.eq eye_right
+    b.eq ojo_der
     cmp x3, #1
-    b.eq eye_left
+    b.eq ojo_izq
     cmp x3, #2
-    b.eq eye_up
-    b eye_down
+    b.eq ojo_arriba
+    b ojo_abajo
 
-eye_right:
+ojo_der:
     cmp x15, #4
-    b.lt pac_check_mouth
+    b.lt pac_verificar_boca
     cmp x15, #5
-    b.gt pac_check_mouth
+    b.gt pac_verificar_boca
     cmp x16, #7
-    b.lt pac_check_mouth
+    b.lt pac_verificar_boca
     cmp x16, #8
-    b.gt pac_check_mouth
-    b pac_draw_white
+    b.gt pac_verificar_boca
+    b pac_dibujar_blanco
 
-eye_left:
+ojo_izq:
     cmp x15, #4
-    b.lt pac_check_mouth
+    b.lt pac_verificar_boca
     cmp x15, #5
-    b.gt pac_check_mouth
+    b.gt pac_verificar_boca
     cmp x16, #5
-    b.lt pac_check_mouth
+    b.lt pac_verificar_boca
     cmp x16, #6
-    b.gt pac_check_mouth
-    b pac_draw_white
+    b.gt pac_verificar_boca
+    b pac_dibujar_blanco
 
-eye_up:
+ojo_arriba:
     cmp x15, #5
-    b.lt pac_check_mouth
+    b.lt pac_verificar_boca
     cmp x15, #6
-    b.gt pac_check_mouth
+    b.gt pac_verificar_boca
     cmp x16, #4
-    b.lt pac_check_mouth
+    b.lt pac_verificar_boca
     cmp x16, #5
-    b.gt pac_check_mouth
-    b pac_draw_white
+    b.gt pac_verificar_boca
+    b pac_dibujar_blanco
 
-eye_down:
+ojo_abajo:
     cmp x15, #4
-    b.lt pac_check_mouth
+    b.lt pac_verificar_boca
     cmp x15, #5
-    b.gt pac_check_mouth
+    b.gt pac_verificar_boca
     cmp x16, #9
-    b.lt pac_check_mouth
+    b.lt pac_verificar_boca
     cmp x16, #10
-    b.gt pac_check_mouth
-    b pac_draw_white
+    b.gt pac_verificar_boca
+    b pac_dibujar_blanco
 
-    // ---------------------------------------------------------
-    // boca: solo si está abierta
-    // ---------------------------------------------------------
-pac_check_mouth:
-    cbz w14, pac_draw_yellow
 
-    // |dx|
-    mov x22, x17
+    // boca: solo si está abierta; Si el píxel no es parte del ojo, verificamos la boca
+
+pac_verificar_boca:
+    cbz w14, pac_dibujar_amarillo // si boca cerrada (0), pintar amarillo
+
+// Calculamos |dx| y |dy| para usar en la condición triangular. El valor absoluto se necesita porque la muesca es simétrica respecto al eje central.
+    mov x22, x17   // copiar dx
     cmp x22, #0
-    b.ge abs_dx_ok
-    neg x22, x22
-abs_dx_ok:
+    b.ge dx_absoluto_listo
+    neg x22, x22  // |dx|
+dx_absoluto_listo:
 
     // |dy|
     mov x23, x18
     cmp x23, #0
-    b.ge abs_dy_ok
+    b.ge dy_absoluto_listo
     neg x23, x23
-abs_dy_ok:
+dy_absoluto_listo:
 
     cmp x3, #0
-    b.eq mouth_right
+    b.eq boca_der
     cmp x3, #1
-    b.eq mouth_left
+    b.eq boca_izq
     cmp x3, #2
-    b.eq mouth_up
-    b mouth_down
+    b.eq boca_arriba
+    b boca_abajo
 
-mouth_right:
+boca_der:
     // muesca triangular hacia la derecha
-    cmp x16, #7
-    b.le pac_draw_yellow
-    sub x24, x16, #7
-    cmp x23, x24
-    b.le pac_skip_pixel
-    b pac_draw_yellow
+    cmp x16, #7      // col > 7? (mitad derecha)
+    b.le pac_dibujar_amarillo NO,  pintar amarillo (no hay boca a la izquierda)
+    sub x24, x16, #7        // profundidad = col - 7 (cuánto me alejé del centro)
+    cmp x23, x24    // |dy| ≤ profundidad?
+    b.le saltar_pixel // Si, está dentro de la boca, NO pintar
+    b pac_dibujar_amarillo  // No, pintar amarillo normal
 
-mouth_left:
+boca_izq:
     // muesca triangular hacia la izquierda
     cmp x16, #7
-    b.ge pac_draw_yellow
+    b.ge pac_dibujar_amarillo  // si col ≥ 7, no hay boca en la derecha
     mov x24, #7
-    sub x24, x24, x16
-    cmp x23, x24
-    b.le pac_skip_pixel
-    b pac_draw_yellow
+    sub x24, x24, x16   // profundidad = 7 - col
+    cmp x23, x24         // |dy| ≤ profundidad?
+    b.le saltar_pixel   // SÍ = boca, no pintar
+    b pac_dibujar_amarillo
 
-mouth_up:
+boca_arriba:
     // muesca triangular hacia arriba
     cmp x15, #7
-    b.ge pac_draw_yellow
+    b.ge pac_dibujar_amarillo  // si fila ≥ 7, no hay boca abajo
     mov x24, #7
-    sub x24, x24, x15
-    cmp x22, x24
-    b.le pac_skip_pixel
-    b pac_draw_yellow
+    sub x24, x24, x15   // profundidad = 7 - fila (crece hacia arriba)
+    cmp x22, x24    // usa |dx| en vez de |dy|,|dx| ≤ profundidad?
+    b.le saltar_pixel  
+    b pac_dibujar_amarillo
 
-mouth_down:
+boca_abajo:
     // muesca triangular hacia abajo
     cmp x15, #7
-    b.le pac_draw_yellow
-    sub x24, x15, #7
-    cmp x22, x24
-    b.le pac_skip_pixel
-    b pac_draw_yellow
+    b.le pac_dibujar_amarillo  // si fila ≤ 7, no hay boca arriba
+    sub x24, x15, #7        // profundidad = fila - 7 (crece hacia abajo)
+    cmp x22, x24             // |dx| ≤ profundidad?
+    b.le saltar_pixel
+    b pac_dibujar_amarillo
 
-
-pac_draw_white:
+//  Aplicamos formula del framebuffer 
+pac_dibujar_blanco:
     add x25, x2, x15           // y actual
     mov x26, #512
     mul x27, x25, x26
@@ -215,9 +216,9 @@ pac_draw_white:
     add x27, x0, x27
     mov w28, #0xFFFF
     sturh w28, [x27]
-    b pac_after_pixel
+    b siguiente_pixel
 
-pac_draw_yellow:
+pac_dibujar_amarillo:
     add x25, x2, x15           // y actual
     mov x26, #512
     mul x27, x25, x26
@@ -227,18 +228,18 @@ pac_draw_yellow:
     add x27, x0, x27
     mov w28, #0xFFE0
     sturh w28, [x27]
-    b pac_after_pixel
+    b siguiente_pixel
 
-pac_skip_pixel:
+saltar_pixel:
     nop
 
-pac_after_pixel:
+siguiente_pixel:
     add x16, x16, #1
     b pac_col_loop
 
-pac_next_row:
+pac_siguiente_fila:
     add x15, x15, #1
-    b pac_row_loop
+    b pac_fil_loop
 
 pac_done:
     ret
@@ -248,29 +249,30 @@ pac_done:
 
 borrarPacmanAnterior:
     sub sp, sp, #16
-    str x30, [sp]
+    str x30, [sp]      // guardamos x30 porque va a usar bl
 
     ldr x9, =pacmanOldX
-    ldr w10, [x9]
+    ldr w10, [x9]       // columna anterior
 
     ldr x11, =pacmanOldY
-    ldr w12, [x11]
+    ldr w12, [x11]  // fila anterior
 
     // convertir celda a píxel
     lsl x1, x10, #4
-    add x1, x1, #8
+    add x1, x1, #8  // pixelX = 8 + col×16
 
     lsl x2, x12, #4
-    add x2, x2, #8
+    add x2, x2, #8    // pixelY = 8 + fila×16
 
     // color negro
     mov w3, #0x0000
 
     // dibujar bloque 16x16 negro
     mov x13, #0
+    
 borrar_loop:
     cmp x13, #16
-    b.ge borrar_fin
+    b.ge borrar_fin 
 
     mov x4, #16
     bl drawHLine

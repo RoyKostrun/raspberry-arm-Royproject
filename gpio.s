@@ -12,6 +12,8 @@
 .equ MASK_GPIO18, 0b1000000000000000000 //0x00040000
 .equ MASK_DIRS,   0b1101100000000000000 //0x0006C000
 
+// guradamos qué boton está presionado en ese momento
+
 .balign 4
 direccionActual:
     .word DIR_NINGUNO
@@ -27,16 +29,18 @@ direccionActual:
 inputRead:
     // Leer GPIO_GPLEV0
 	mov w20, PERIPHERAL_BASE + GPIO_BASE     // Dirección de los GPIO.		
-    ldr w22, [x20, GPIO_GPLEV0]
-	
+    ldr w22, [x20, GPIO_GPLEV0] //registro de solo lectura de 32 bits donde cada bit indica el estado actual del GPIO correspondiente
+                                
 
     // Filtrar solo GPIO 14,15,17,18
     ldr w23, =MASK_DIRS
     and w22, w22, w23
 
-    // ninguno activo
+    // ningun botón presionado
     cbz w22, guardar_ninguno
 
+// bloque tipo "switch", comparamos w22 con cada mascara individual
+// detectamos qué gpio está conectado
     // GPIO14 = arriba
     ldr w23, =MASK_GPIO14
     cmp w22, w23
@@ -59,6 +63,8 @@ inputRead:
 
     // dos o más activos => ignorar
     b guardar_ninguno
+
+// guardamos la direccion detectada
 
 guardar_arriba:
     mov w15, PERIPHERAL_BASE + GPIO_BASE
@@ -103,6 +109,7 @@ guardar_ninguno:
 .global actualizarDireccionPacman
 
 actualizarDireccionPacman:
+
     // leer direccionActual (botones)
     ldr x9, =direccionActual
     ldr w10, [x9]
@@ -111,6 +118,8 @@ actualizarDireccionPacman:
     cbz w10, fin_actualizarDireccionPacman
 
     // leer posición actual de Pac-Man
+    // pacmanX y pacmanY son variables globales de movementPacman.s
+
     ldr x11, =pacmanX
     ldr w12, [x11]          // x actual
 
@@ -128,43 +137,43 @@ actualizarDireccionPacman:
     // 3 izquierda -> sprite 1
     // 4 derecha   -> sprite 0
 
-    cmp w10, #1
+ cmp w10, #1
     b.ne check_dir_abajo
-    mov w17, #2
-    sub w16, w16, #1       // probar arriba
+    mov w17, #2             // ---3
+    sub w16, w16, #1       // probar arriba: add
     b check_cambio_bounds
 
 check_dir_abajo:
     cmp w10, #2
     b.ne check_dir_izquierda
-    mov w17, #3
-    add w16, w16, #1       // probar abajo
+    mov w17, #3            // --- 2
+    add w16, w16, #1       // probar abajo: sub
     b check_cambio_bounds
 
 check_dir_izquierda:
-    cmp w10, #3
+    cmp w10, #3        
     b.ne check_dir_derecha
-    mov w17, #1
+    mov w17, #1   // --0 
     // portal izquierdo
-    cmp w15, #0
+    cmp w15, #0  //--30
     b.ne cambio_left_normal
-    mov w15, #30
+    mov w15, #30  //--0
     b check_cambio_bounds
 cambio_left_normal:
-    sub w15, w15, #1
+    sub w15, w15, #1 //add
     b check_cambio_bounds
 
 check_dir_derecha:
     cmp w10, #4
     b.ne fin_actualizarDireccionPacman
-    mov w17, #0
+    mov w17, #0  //--1
     // portal derecho
-    cmp w15, #30
+    cmp w15, #30  //--0
     b.ne cambio_right_normal
-    mov w15, #0
+    mov w15, #0  //--30
     b check_cambio_bounds
 cambio_right_normal:
-    add w15, w15, #1
+    add w15, w15, #1 //sub
 
 check_cambio_bounds:
     // verificar límites verticales
@@ -179,13 +188,13 @@ check_cambio_bounds:
     cmp w15, #30
     b.gt fin_actualizarDireccionPacman
 
-    // leer mazeMap31[nextY][nextX]
+    // leer mazeMap31[nextY][nextX] esto impide que el Pac-Man atraviese paredes al cambiar de dirección
     ldr x18, =mazeMap31
     mov w19, #31
     mul w20, w16, w19
     add w20, w20, w15
     add x18, x18, x20
-    ldrb w21, [x18]
+    ldrb w21, [x18] // leer 1 byte del mapa, la usa cvez q consulto el maze
 
     // si hay pared, NO cambiar dirección
     cmp w21, #'1'

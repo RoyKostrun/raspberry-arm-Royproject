@@ -2,6 +2,7 @@
 
 .global mazeMap31 
 
+//ascii guarda caracteres,"1"= 49 y "0"=48
 mazeMap31:
     .ascii "1111111111111111111111111111111"
     .ascii "1000000000000001000000000000001"
@@ -90,29 +91,32 @@ drawMaze:
     // x9 = puntero base al mapa
     ldr x9, =mazeMap31
 
-    // x16 = fila (0..30)
+    // x16 = fila (0..30), fila actual
     mov x16, #0
 
+//Recorrer filas
 maze_row_loop:
     cmp x16, #31
-    b.ge maze_done
+    b.ge maze_done  // si fila ≥ 31, terminamos
 
-    // x21 = columna (0..30)
+    // x21 = columna (0..30), es la columna actual
     mov x21, #0
 
+//Recorrer columnas
 maze_col_loop:
     cmp x21, #31
-    b.ge next_row
+    b.ge next_row // si col ≥ 31, pasar a siguiente fila
 
     // ---------------------------------------------------------
     // cargar celda actual: mapa[fila][col]
     // dirección = base + fila*31 + col
+    // Leer una celda del mapa
     // ---------------------------------------------------------
     mov x22, #31
-    mul x23, x16, x22
-    add x23, x23, x21
-    add x24, x9, x23
-    ldrb w25, [x24]
+    mul x23, x16, x22 // fila × 31
+    add x23, x23, x21 // + columna = índice
+    add x24, x9, x23  // dirección del byte
+    ldrb w25, [x24] // leer 1 byte
 
     // si no es '1', pasar a la siguiente celda
     cmp w25, #'1'
@@ -123,17 +127,17 @@ maze_col_loop:
     // pixelX = 8 + col*16
     // pixelY = 8 + fila*16
     // ---------------------------------------------------------
-    lsl x26, x21, #4      // col * 16
-    add x26, x26, #8      // pixelX
+    lsl x26, x21, #4      // col * 16 = pixelX sin margen
+    add x26, x26, #8      // + 8 de margen = pixelX
 
-    lsl x27, x16, #4      // fila * 16
-    add x27, x27, #8      // pixelY
+    lsl x27, x16, #4      // fila * 16 = pixelY sin margen
+    add x27, x27, #8      // + 8 = pixelY
 
     // =========================================================
     // BORDE SUPERIOR
     // si fila == 0, o la celda de arriba no es '1'
     // =========================================================
-    cbz x16, draw_top
+    cbz x16, draw_top  // si fila == 0, siempre dibujar (no hay vecino arriba)
 
     sub x28, x16, #1
     mov x22, #31
@@ -157,7 +161,8 @@ skip_top:
     // si fila == 30, o la celda de abajo no es '1'
     // =========================================================
     cmp x16, #30
-    b.eq draw_bottom
+    b.eq draw_bottom // si fila == 30, siempre dibujar
+
 
     add x28, x16, #1
     mov x22, #31
@@ -180,9 +185,9 @@ skip_bottom:
     // BORDE IZQUIERDO
     // si col == 0, o la celda de la izquierda no es '1'
     // =========================================================
-    cbz x21, draw_left
+    cbz x21, draw_left // si col == 0, siempre dibujar
 
-    sub x28, x21, #1
+    sub x28, x21, #1     // columna del vecino izquierdo
     mov x22, #31
     mul x23, x16, x22
     add x23, x23, x28
@@ -223,6 +228,7 @@ draw_right:
 
 skip_right:
 
+//Cierre de los loops: Incrementa contadores, y al terminar restaura x30 y vuelve.
 next_col:
     add x21, x21, #1
     b maze_col_loop
